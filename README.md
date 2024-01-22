@@ -5,7 +5,7 @@ I will need to write this at some point but for now it will be used as a check l
 - [x] Shared storage class
 - [x] Replay buffer class
 - [x] Monte Carlo Search Tree Class
-- [ ] Neural Nets
+- [x] Neural Nets
 - [ ] Training method
 - [x] Data worker class-> requires the neural net to figure out but nearly there
 - [ ] Implement classic control instantiations
