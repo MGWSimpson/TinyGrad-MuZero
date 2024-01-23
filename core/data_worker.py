@@ -25,15 +25,15 @@ class DataWorker(object):
             done = False
             eps_reward, eps_steps, visit_entropies = 0, 0, 0
             trained_steps = self.shared_storage.get_counter()
-            _temperature = self.config.visit_softmax_temperature_fn(num_moves=len(env.history),
-                                                                    trained_steps=trained_steps)
+            #_temperature = self.config.visit_softmax_temperature_fn(num_moves=len(env.history),
+                        #                                            trained_steps=trained_steps)
 
             while not done and eps_steps <= self.config.max_moves:
                 obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
                 network_output = model.initial_inference(obs)
 
-                action = list(network_output.policy_logits.keys())[0]
-                obs, reward, done, info = env.step(action.index)
+                action = eps_steps % 2
+                obs, reward, done, info = env.step(action)
 
                 eps_reward += reward
                 eps_steps += 1
@@ -55,5 +55,5 @@ class DataWorker(object):
 
 
             env.close()
-            self.replay_buffer.save_game.remote(env)
+            self.replay_buffer.save_game(env)
             print(self.replay_buffer.size())

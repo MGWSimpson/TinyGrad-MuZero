@@ -10,7 +10,8 @@ def main():
     parser.add_argument('--env', required=True, help='Name of the environment')
     parser.add_argument('--num_actors', type=int, default=32,
                         help='Number of actors running concurrently (default: %(default)s)')
-
+    parser.add_argument('--seed', type=int, default=0,
+                        help='seed (default: %(default)s)')
     args = parser.parse_args()
 
     config = ClassicControlConfig(args=args)

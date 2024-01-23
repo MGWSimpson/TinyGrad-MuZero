@@ -33,12 +33,14 @@ class ClassicControlConfig(BaseMuZeroConfig):
     def _set_user_args(self, args):
         self.env_name = args.env
         self.num_actors = args.num_actors
+        self.seed = args.seed
         pass
 
     def _set_game(self):
         game = self.new_game()
         self.obs_shape = game.reset().shape[0]
         self.action_space_size = game.action_space_size
+
 
     def get_uniform_network(self):
         return MuZeroNet(self.obs_shape, self.action_space_size,  self.reward_support.size, self.value_support.size)

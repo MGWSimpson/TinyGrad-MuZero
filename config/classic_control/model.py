@@ -39,6 +39,10 @@ class MuZeroNet(BaseMuZeroNet):
 
         self.action_space_n = action_space_n
 
+
+        # need method to iteratively access all layers of all networks
+        self.networks = [self._representation, self._dynamics_state, self._dynamics_reward,
+                         self._prediction_actor, self._prediction_value]
         """
         self._prediction_value[-1].weight.data.fill_(0)
         self._prediction_value[-1].bias.data.fill_(0)
@@ -69,3 +73,12 @@ class MuZeroNet(BaseMuZeroNet):
         return next_state, reward
 
 
+
+    def get_weights(self):
+        weights = []
+        for network in self.networks:
+            weights.append([layer.weight for layer in network.layers if isinstance(layer, nn.Linear) ])
+        return weights
+
+    def set_weights(self, weights):
+        pass
