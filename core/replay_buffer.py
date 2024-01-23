@@ -1,6 +1,6 @@
 import numpy as np
 from tinygrad import Tensor
-from game import Game
+from core.game import Game
 class ReplayBuffer(object):
 
     def __init__(self, capacity, batch_size):

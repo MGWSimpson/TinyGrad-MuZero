@@ -32,6 +32,7 @@ class ClassicControlConfig(BaseMuZeroConfig):
 
     def _set_user_args(self, args):
         self.env_name = args.env
+        self.num_actors = args.num_actors
         pass
 
     def _set_game(self):
@@ -43,7 +44,7 @@ class ClassicControlConfig(BaseMuZeroConfig):
         return MuZeroNet(self.obs_shape, self.action_space_size,  self.reward_support.size, self.value_support.size)
 
     def new_game(self):
-        env = gym.make(self.env_name, new_step_api=True)
+        env = gym.make(self.env_name)
         return ClassicControlWrapper(env, discount=self.discount, k=4)
 
 

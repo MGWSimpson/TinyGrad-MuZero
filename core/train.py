@@ -1,6 +1,8 @@
-from data_worker import DataWorker
-from shared_storage import SharedStorage
-from replay_buffer import ReplayBuffer
+
+
+from core.data_worker import DataWorker
+from core.shared_storage import SharedStorage
+from core.replay_buffer import ReplayBuffer
 def _train():
     pass
 

@@ -24,8 +24,7 @@ class ClassicControlWrapper(Game):
         return self.obs(len(self.rewards)), reward, done, info
 
     def reset(self, **kwargs):
-        obs = self.env.reset(**kwargs)
-
+        obs, _ = self.env.reset(**kwargs)
         self.rewards = []
         self.history = []
         self.obs_history = []
@@ -37,6 +36,7 @@ class ClassicControlWrapper(Game):
 
     def obs(self, i):
         frames = self.obs_history[i:i + self.k]
+        print(frames)
         return np.array(frames).flatten()
 
     def close(self):

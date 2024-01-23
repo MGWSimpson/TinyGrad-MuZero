@@ -1,10 +1,10 @@
 
-from mcts import MCTS, Node
+from core.mcts import MCTS, Node
 import tinygrad
 from tinygrad import Tensor, TinyJit, nn, GlobalCounters
 from tinygrad.dtype import dtypes
 
-from utils import select_action
+from core.utils import select_action
 
 class DataWorker(object):
     def __init__(self, rank, config, shared_storage, replay_buffer):
@@ -16,10 +16,12 @@ class DataWorker(object):
     def run(self):
         model = self.config.get_uniform_network()
         while self.shared_storage.get_counter() < self.config.training_steps:
-            model.set_weights(self.shared_storage.get_weights())
+            model.set_weights(self.shared_storage.get_weights()) # TODO: implement
 
             env = self.config.new_game()
+
             obs = env.reset(seed=self.config.seed + self.rank)
+
             done = False
             eps_reward, eps_steps, visit_entropies = 0, 0, 0
             trained_steps = self.shared_storage.get_counter()
@@ -27,7 +29,16 @@ class DataWorker(object):
                                                                     trained_steps=trained_steps)
 
             while not done and eps_steps <= self.config.max_moves:
-                root = Node(0)
+                obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
+                network_output = model.initial_inference(obs)
+
+                action = list(network_output.policy_logits.keys())[0]
+                obs, reward, done, info = env.step(action.index)
+
+                eps_reward += reward
+                eps_steps += 1
+
+                """root = Node(0)
                 obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
                 network_output = model.initial_inference(obs)
                 root.expand(env.to_play(), env.legal_actions(), network_output)
@@ -37,9 +48,12 @@ class DataWorker(object):
                 action, visit_entropy = select_action(root, temperature=_temperature, deterministic=False)
                 obs, reward, done, info = env.step(action.index)
                 env.store_search_stats(root)
+
                 eps_reward += reward
                 eps_steps += 1
-                visit_entropies += visit_entropy
-                pass
+                visit_entropies += visit_entropy"""
+
+
             env.close()
             self.replay_buffer.save_game.remote(env)
+            print(self.replay_buffer.size())
