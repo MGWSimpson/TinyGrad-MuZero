@@ -13,6 +13,15 @@ class TinyNet:
     def __call__(self, x: Tensor) -> Tensor: return x.sequential(self.layers)
 
 
+    def __getstate__(self):
+        pass
+
+    def __setstate__(self, state):
+        print(state)
+        pass
+
+
+
 class MuZeroNet(BaseMuZeroNet):
     def __init__(self, input_size, action_space_n, reward_support_size, value_support_size):
         super(MuZeroNet, self).__init__()
@@ -79,6 +88,7 @@ class MuZeroNet(BaseMuZeroNet):
         for network in self.networks:
             weights.append([layer.weight for layer in network.layers if isinstance(layer, nn.Linear) ])
         return weights
+
 
     def set_weights(self, weights):
         pass

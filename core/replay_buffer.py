@@ -1,6 +1,8 @@
+import ray
 import numpy as np
 from tinygrad import Tensor
 from core.game import Game
+@ray.remote
 class ReplayBuffer(object):
 
     def __init__(self, capacity, batch_size):

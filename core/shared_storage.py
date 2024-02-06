@@ -1,4 +1,7 @@
+import ray
 
+
+@ray.remote
 class SharedStorage(object):
     def __init__(self, model):
         self.model = model
