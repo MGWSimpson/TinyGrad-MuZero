@@ -81,13 +81,27 @@ class MuZeroNet(BaseMuZeroNet):
         return next_state, reward
 
 
-
+    """
+    Weights returned as numpy array
+    """
     def get_weights(self):
         weights = []
         for network in self.networks:
-            weights.append([layer.weight for layer in network.layers if isinstance(layer, nn.Linear) ])
+            for layer in network.layers:
+                if isinstance(layer, nn.Linear):
+                    weights.append(layer.weight.numpy())
+
         return weights
 
 
+    """
+    Weights defined as numpy arrays
+    """
     def set_weights(self, weights):
-        pass
+        weight_pointer = 0
+        for network in self.networks:
+            for layer in network.layers:
+                if isinstance(layer, nn.Linear) and weight_pointer < len(weights):
+                    layer.weight = Tensor(weights[weight_pointer])
+                    weight_pointer +=1
+
