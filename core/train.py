@@ -7,7 +7,7 @@ from core.replay_buffer import ReplayBuffer
 def _train():
     pass
 def train(config,):
-    storage = SharedStorage.remote(config.get_uniform_network())
+    storage = SharedStorage.remote([])
     replay_buffer = ReplayBuffer.remote(batch_size=config.batch_size, capacity=config.window_size)
 
 

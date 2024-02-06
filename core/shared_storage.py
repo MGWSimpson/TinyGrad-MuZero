@@ -3,10 +3,10 @@ import ray
 
 @ray.remote
 class SharedStorage(object):
-    def __init__(self, model):
-        self.model = model
+    def __init__(self, weights):
+        self.weights = weights
         self.step_counter = 0
-        # logging info previously below but has been cut for now
+
 
     def incr_counter(self):
         self.step_counter += 1
@@ -15,7 +15,7 @@ class SharedStorage(object):
         return self.step_counter
 
     def get_weights(self):
-        return self.model.get_weights()
+        return self.weights
 
     def set_weights(self, weights):
-        return self.model.set_weights(weights)
+        self.weights = weights

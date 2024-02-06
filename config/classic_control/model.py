@@ -1,9 +1,14 @@
 import tinygrad
+import math
+import weakref
 from tinygrad import Tensor, TinyJit, nn, GlobalCounters
 from tinygrad.dtype import dtypes
 
 from core.model import BaseMuZeroNet
 from typing import List, Callable
+
+
+
 
 
 class TinyNet:
@@ -13,12 +18,6 @@ class TinyNet:
     def __call__(self, x: Tensor) -> Tensor: return x.sequential(self.layers)
 
 
-    def __getstate__(self):
-        pass
-
-    def __setstate__(self, state):
-        print(state)
-        pass
 
 
 
