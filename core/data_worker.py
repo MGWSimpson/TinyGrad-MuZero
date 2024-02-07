@@ -29,11 +29,6 @@ class DataWorker(object):
 
 
                 env = self.config.new_game()
-
-
-
-
-
                 obs = env.reset(seed=self.config.seed + self.rank)
 
                 done = False
