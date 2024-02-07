@@ -8,7 +8,7 @@ class ReplayBuffer(object):
     def __init__(self, capacity, batch_size):
         self.capacity = capacity
         self.batch_size = batch_size
-        self.buffer = []
+        self.buffer = [] # stores env_wrapper / game objects
         self.game_look_up = []
         self.base_idx = 0
 

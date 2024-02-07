@@ -59,16 +59,17 @@ class MuZeroNet(BaseMuZeroNet):
         """
 
     def prediction(self, state):
-        actor_logit = self._prediction_actor(state)
-        value = self._prediction_value(state)
-        return actor_logit, value
+        actor_logit = self._prediction_actor(Tensor(state))
+        value = self._prediction_value(Tensor(state))
+        return actor_logit.numpy(), value.numpy()
 
     def representation(self, obs_history):
-        return self._representation(obs_history)
+        return self._representation(obs_history).numpy()
 
     def dynamics(self, state, action):
         assert len(state.shape) == 2
         assert action.shape[1] == 1
+
 
 
 
@@ -80,10 +81,12 @@ class MuZeroNet(BaseMuZeroNet):
         action_one_hot = Tensor(action_one_hot, dtype=dtypes.float32)
 
 
-        x = state.cat(action_one_hot, dim=1)
+
+
+        x =  Tensor(state).cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)
         reward = self._dynamics_reward(x)
-        return next_state, reward
+        return next_state.numpy(), reward.numpy()
 
 
     """

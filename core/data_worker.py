@@ -30,6 +30,10 @@ class DataWorker(object):
 
                 env = self.config.new_game()
 
+
+
+
+
                 obs = env.reset(seed=self.config.seed + self.rank)
 
                 done = False
@@ -37,7 +41,7 @@ class DataWorker(object):
                 trained_steps = ray.get(self.shared_storage.get_counter.remote())
 
                 _temperature = self.config.visit_softmax_temperature_fn(trained_steps=trained_steps)
-
+                
                 while not done and eps_steps <= self.config.max_moves:
                     root = Node(0)
                     obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)

@@ -31,6 +31,8 @@ class Action(object):
     def __gt__(self, other):
         return self.index > other.index
 
+
+
 class ActionHistory(object):
     """Simple history container used inside the search.
 
@@ -58,6 +60,7 @@ class ActionHistory(object):
         return Player()
 
 
+
 class Game:
 
     def __init__(self, env, action_space_size: int, discount: float, config=None):
@@ -65,8 +68,10 @@ class Game:
         self.obs_history = []
         self.history = []
         self.rewards = []
+
         self.child_visits = []
         self.root_values = []
+
         self.action_space_size = action_space_size
         self.discount = discount
         self.config = config
