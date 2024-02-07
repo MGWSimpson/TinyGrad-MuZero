@@ -99,3 +99,8 @@ class BaseMuZeroConfig(object):
     @abstractmethod
     def _set_user_args(self, args):
         raise NotImplementedError
+
+
+    @abstractmethod
+    def visit_softmax_temperature(self, num_moves, trained_steps):
+        raise NotImplementedError

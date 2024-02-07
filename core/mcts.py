@@ -3,6 +3,8 @@ import math
 
 import numpy as np
 
+from tinygrad import Tensor
+
 class MinMaxStats(object):
     """A class that holds the min-max values of the tree."""
 
@@ -43,8 +45,9 @@ class Node(object):
         self.to_play = to_play
         self.hidden_state = network_output.hidden_state
         self.reward = network_output.reward
-        # softmax over policy logits
-        policy = {a: math.exp(network_output.policy_logits[0][a.index]) for a in actions}
+        # softmax over policy logits, TODO: check if i should convert to numpy before returning
+        policy = {a: math.exp(network_output.policy_logits[0][a.index].numpy()) for a in actions}
+
         policy_sum = sum(policy.values())
         for action, p in policy.items():
             self.children[action] = Node(p / policy_sum)
@@ -75,11 +78,15 @@ class MCTS(object):
             # Inside the search tree we use the dynamics function to obtain the next
             # hidden state given an action and the previous hidden state.
             ## previous hidden state, and the action we took.
-            parent = search_path[-2]  ## onbe up from the leaf node
-            network_output = None # TODO: implement tiny grad network
+            parent = search_path[-2]  ## one up from the leaf node
+
+            network_output = model.recurrent_inference(parent.hidden_state, Tensor([[history.last_action().index]]) )
             node.expand(history.to_play(), history.action_space(), network_output)
 
+
             self.backpropagate(search_path, network_output.value.item(), history.to_play(), min_max_stats)
+
+
 
     def select_child(self, node, min_max_stats):
         _, action, child = max((self.ucb_score(node, child, min_max_stats), action, child)

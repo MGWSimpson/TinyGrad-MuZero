@@ -1,6 +1,22 @@
 from typing import List
 
 
+
+# TODO: refactor this?
+class Player(object):
+    def __init__(self, id=1):
+        self.id = id
+
+    def __eq__(self, other):
+        if not isinstance(other, Player):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.id == other.id
+
+
+
+
 class Action(object):
 
     def __init__(self, index: int):
@@ -38,6 +54,8 @@ class ActionHistory(object):
         return [Action(i) for i in range(self.action_space_size)]
 
 
+    def to_play(self) -> Player:
+        return Player()
 
 
 class Game:
@@ -83,3 +101,7 @@ class Game:
 
     def close(self, *args, **kwargs):
         self.env.close(*args, **kwargs)
+
+    def to_play(self) -> Player:
+        return Player()
+

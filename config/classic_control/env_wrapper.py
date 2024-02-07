@@ -5,6 +5,7 @@ import numpy as np
 from core.game import Game, Action
 
 
+
 class ClassicControlWrapper(Game):
     def __init__(self, env, k: int, discount: float):
         super().__init__(env, env.action_space.n, discount)
@@ -41,3 +42,5 @@ class ClassicControlWrapper(Game):
 
     def close(self):
         self.env.close()
+
+

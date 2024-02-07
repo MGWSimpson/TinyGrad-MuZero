@@ -7,7 +7,7 @@ from tinygrad.dtype import dtypes
 from core.model import BaseMuZeroNet
 from typing import List, Callable
 
-
+import numpy as np
 
 
 
@@ -71,9 +71,14 @@ class MuZeroNet(BaseMuZeroNet):
         assert action.shape[1] == 1
 
 
-        action_one_hot = Tensor.zeros((action.shape[0], self.action_space_n),  dtype=dtypes.float32)
 
-        #TODO: implement scatter
+
+        action_one_hot = np.zeros((action.shape[0], self.action_space_n))
+
+        action_one_hot[0][action[0][0].numpy()] = 1.0
+
+        action_one_hot = Tensor(action_one_hot, dtype=dtypes.float32)
+
 
         x = state.cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)

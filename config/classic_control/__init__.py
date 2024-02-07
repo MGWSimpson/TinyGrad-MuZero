@@ -49,6 +49,12 @@ class ClassicControlConfig(BaseMuZeroConfig):
         env = gym.make(self.env_name)
         return ClassicControlWrapper(env, discount=self.discount, k=4)
 
-
+    def visit_softmax_temperature_fn(self, trained_steps):
+        if trained_steps < 0.5 * self.training_steps:
+            return 1.0
+        elif trained_steps < 0.75 * self.training_steps:
+            return 0.5
+        else:
+            return 0.25
 
 

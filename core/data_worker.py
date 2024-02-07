@@ -1,3 +1,4 @@
+import traceback
 
 import ray
 from core.mcts import MCTS, Node
@@ -34,8 +35,8 @@ class DataWorker(object):
                 done = False
                 eps_reward, eps_steps, visit_entropies = 0, 0, 0
                 trained_steps = ray.get(self.shared_storage.get_counter.remote())
-                #_temperature = self.config.visit_softmax_temperature_fn(num_moves=len(env.history),
-                            #                                            trained_steps=trained_steps)
+
+                _temperature = self.config.visit_softmax_temperature_fn(trained_steps=trained_steps)
 
                 while not done and eps_steps <= self.config.max_moves:
                     obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
@@ -47,12 +48,14 @@ class DataWorker(object):
                     eps_reward += reward
                     eps_steps += 1
 
-                    """root = Node(0)
+                    root = Node(0)
                     obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
                     network_output = model.initial_inference(obs)
                     root.expand(env.to_play(), env.legal_actions(), network_output)
                     root.add_exploration_noise(dirichlet_alpha=self.config.root_dirichlet_alpha,
                                                exploration_fraction=self.config.root_exploration_fraction)
+
+
                     MCTS(self.config).run(root, env.action_history(), model)
                     action, visit_entropy = select_action(root, temperature=_temperature, deterministic=False)
                     obs, reward, done, info = env.step(action.index)
@@ -60,15 +63,15 @@ class DataWorker(object):
     
                     eps_reward += reward
                     eps_steps += 1
-                    visit_entropies += visit_entropy"""
+                    visit_entropies += visit_entropy
 
 
                 env.close()
                 self.replay_buffer.save_game.remote(env)
-                self.shared_storage.incr_counter.remote()
+                self.shared_storage.incr_counter.remote() # TODO: remove this
 
         except Exception as e:
-            print(e)
+            print(traceback.format_exc())
 
 
             
