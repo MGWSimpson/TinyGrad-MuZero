@@ -42,8 +42,25 @@ def _train(config, shared_storage, replay_buffer):
 
 
 def update_weights(model, target_model, optim, replay_buffer, config):
-    # TODO: start from here
-    pass
+    batch = ray.get(replay_buffer.sample_batch.remote(config.num_unroll_steps))
+
+    obs_batch, action_batch, target_reward, target_value, target_policy, indices = batch
+
+    obs_batch = obs_batch.to(config.device)
+    action_batch = action_batch.to(config.device).unsqueeze(-1)
+    target_reward = target_reward.to(config.device)
+    target_value = target_value.to(config.device)
+    target_policy = target_policy.to(config.device)
+
+    value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
+
+
+
+    predicted_values, predicted_rewards, predicted_policies = value, None, policy_logits.softmax()
+
+
+
+
 
 def train(config,):
 
