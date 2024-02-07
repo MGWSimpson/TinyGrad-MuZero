@@ -8,11 +8,11 @@ class ClassicControlConfig(BaseMuZeroConfig):
 
     def __init__(self, args):
         super(ClassicControlConfig, self).__init__(
-            training_steps=10,
+            training_steps=5,
             test_interval=100,
             test_episodes=5,
             checkpoint_interval=20,
-            max_moves=1000,
+            max_moves=10,
             discount=0.997,
             dirichlet_alpha=0.25,
             num_simulations=50,

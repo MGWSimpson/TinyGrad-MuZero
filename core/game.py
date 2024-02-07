@@ -105,3 +105,14 @@ class Game:
     def to_play(self) -> Player:
         return Player()
 
+    def store_search_stats(self, root, idx: int = None):
+        sum_visits = sum(child.visit_count for child in root.children.values())
+        action_space = (Action(index) for index in range(self.action_space_size))
+        if idx is None:
+            self.child_visits.append([root.children[a].visit_count / sum_visits if a in root.children else 0
+                                      for a in action_space])
+            self.root_values.append(root.value())
+        else:
+            self.child_visits[idx] = [root.children[a].visit_count / sum_visits if a in root.children else 0
+                                      for a in action_space]
+            self.root_values[idx] = root.value()

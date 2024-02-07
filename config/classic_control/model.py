@@ -35,7 +35,7 @@ class MuZeroNet(BaseMuZeroNet):
 
         self._dynamics_reward = TinyNet([nn.Linear(self.hx_size + action_space_n, 64),
                                  Tensor.leakyrelu,
-                                 nn.Linear(64, reward_support_size)])
+                                 nn.Linear(64, 1)])
 
         self._prediction_actor = TinyNet([nn.Linear(self.hx_size, 64),
                                   Tensor.leakyrelu,
@@ -43,7 +43,7 @@ class MuZeroNet(BaseMuZeroNet):
 
         self._prediction_value = TinyNet([nn.Linear(self.hx_size, 64),
                                   Tensor.leakyrelu,
-                                  nn.Linear(64, value_support_size)])
+                                  nn.Linear(64, 1)])
 
         self.action_space_n = action_space_n
 

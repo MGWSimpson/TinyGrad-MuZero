@@ -81,7 +81,7 @@ class MCTS(object):
             parent = search_path[-2]  ## one up from the leaf node
 
             network_output = model.recurrent_inference(parent.hidden_state, Tensor([[history.last_action().index]]) )
-            node.expand(history.to_play(), history.action_space(), network_output)
+            node.expand(history.to_play(), history.action_space(), network_output) # TODO implement value_support_size stuff ... ??
 
 
             self.backpropagate(search_path, network_output.value.item(), history.to_play(), min_max_stats)

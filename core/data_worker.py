@@ -39,15 +39,6 @@ class DataWorker(object):
                 _temperature = self.config.visit_softmax_temperature_fn(trained_steps=trained_steps)
 
                 while not done and eps_steps <= self.config.max_moves:
-                    obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
-                    network_output = model.initial_inference(obs)
-
-                    action = eps_steps % 2
-                    obs, reward, done, info = env.step(action)
-
-                    eps_reward += reward
-                    eps_steps += 1
-
                     root = Node(0)
                     obs = Tensor(obs, dtype=dtypes.float32).unsqueeze(0)
                     network_output = model.initial_inference(obs)
@@ -60,7 +51,7 @@ class DataWorker(object):
                     action, visit_entropy = select_action(root, temperature=_temperature, deterministic=False)
                     obs, reward, done, info = env.step(action.index)
                     env.store_search_stats(root)
-    
+
                     eps_reward += reward
                     eps_steps += 1
                     visit_entropies += visit_entropy
