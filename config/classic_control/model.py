@@ -22,8 +22,8 @@ class TinyNet:
 
 
 class MuZeroNet(BaseMuZeroNet):
-    def __init__(self, input_size, action_space_n, reward_support_size, value_support_size):
-        super(MuZeroNet, self).__init__()
+    def __init__(self, input_size, action_space_n, reward_support_size, value_support_size, inverse_value_transform, inverse_reward_transform):
+        super(MuZeroNet, self).__init__(inverse_value_transform=inverse_value_transform, inverse_reward_transform=inverse_reward_transform)
         self.hx_size = 32
         self._representation = TinyNet([nn.Linear(input_size, self.hx_size),
                                 Tensor.tanh])
@@ -35,7 +35,7 @@ class MuZeroNet(BaseMuZeroNet):
 
         self._dynamics_reward = TinyNet([nn.Linear(self.hx_size + action_space_n, 64),
                                  Tensor.leakyrelu,
-                                 nn.Linear(64, 1)])
+                                 nn.Linear(64, reward_support_size)])
 
         self._prediction_actor = TinyNet([nn.Linear(self.hx_size, 64),
                                   Tensor.leakyrelu,
@@ -43,7 +43,7 @@ class MuZeroNet(BaseMuZeroNet):
 
         self._prediction_value = TinyNet([nn.Linear(self.hx_size, 64),
                                   Tensor.leakyrelu,
-                                  nn.Linear(64, 1)])
+                                  nn.Linear(64, value_support_size)])
 
         self.action_space_n = action_space_n
 

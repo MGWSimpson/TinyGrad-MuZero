@@ -43,7 +43,7 @@ class ClassicControlConfig(BaseMuZeroConfig):
 
 
     def get_uniform_network(self):
-        return MuZeroNet(self.obs_shape, self.action_space_size,  self.reward_support.size, self.value_support.size)
+        return MuZeroNet(self.obs_shape, self.action_space_size,  self.reward_support.size, self.value_support.size, inverse_value_transform=self.inverse_value_transform, inverse_reward_transform=self.inverse_reward_transform)
 
     def new_game(self):
         env = gym.make(self.env_name)

@@ -23,7 +23,7 @@ class DataWorker(object):
             model = self.config.get_uniform_network()
             while ray.get(self.shared_storage.get_counter.remote()) < self.config.training_steps:
 
-
+                model.eval()
 
                 model.set_weights(ray.get(self.shared_storage.get_weights.remote()))
 

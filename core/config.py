@@ -3,6 +3,8 @@ Parent class for implementing different configs for the different types of games
 """
 from abc import abstractmethod
 
+from tinygrad import Tensor
+
 class DiscreteSupport:
     def __init__(self, min: int, max: int):
         assert min < max
@@ -104,3 +106,27 @@ class BaseMuZeroConfig(object):
     @abstractmethod
     def visit_softmax_temperature(self, num_moves, trained_steps):
         raise NotImplementedError
+
+    def inverse_reward_transform(self, reward_logits):
+        return self.inverse_scalar_transform(reward_logits, self.reward_support)
+
+    def inverse_value_transform(self, value_logits):
+        return self.inverse_scalar_transform(value_logits, self.value_support)
+
+    def inverse_scalar_transform(self, logits, scalar_support):
+        """ Reference : Appendix F => Network Architecture
+        & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
+        """
+        logits = Tensor(logits)
+        value_probs = Tensor.softmax(logits, axis=1)
+        value_support = Tensor.ones(value_probs.shape)
+        value_support[:, :] = Tensor([x for x in scalar_support.range])
+        value_support = value_support.to(device=value_probs.device)
+        value = (value_support * value_probs).sum(1, keepdim=True)
+
+        epsilon = 0.001
+        sign = Tensor.ones(value.shape).float().to(value.device)
+        sign[value < 0] = -1.0
+        output = (((Tensor.sqrt(1 + 4 * epsilon * (Tensor.abs(value) + 1 + epsilon)) - 1) / (2 * epsilon)) ** 2 - 1)
+        output = sign * output
+        return output

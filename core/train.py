@@ -10,7 +10,10 @@ from core.utils import soft_update
 def _train(config, shared_storage, replay_buffer):
 
     model = config.get_uniform_network()
+    model.train()
+
     target_model = config.get_uniform_network()
+    target_model.eval()
 
 
 
@@ -52,12 +55,12 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
     obs_batch, action_batch, target_reward, target_value, target_policy, indices = batch
 
-
     obs_batch = Tensor(obs_batch)
     action_batch = Tensor(action_batch)
     target_reward = Tensor(target_reward)
     target_value = Tensor(target_value)
     target_policy = Tensor(target_policy)
+
 
 
     obs_batch = obs_batch.to(config.device)
@@ -67,17 +70,27 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     target_policy = target_policy.to(config.device)
 
 
+    # transform targets to categorical rep
+    transformed_target_reward = config.scalar_transform(target_reward)
+    target_reward_phi = config.reward_phi(transformed_target_reward)
+    transformed_target_value = config.scalar_transform(target_value)
+    target_value_phi = config.value_phi(transformed_target_value)
+
+
 
 
 
     value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
     value = Tensor(value)
+    scaled_value = config.inverse_value_transform(value)
+
     policy_logits = Tensor(policy_logits)
 
 
 
-    value_loss = - (target_value[:, 0] - value)
-    policy_loss= -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
+
+    value_loss = config.scalar_value_loss(value, target_value_phi[:, 0])
+    policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
     reward_loss = Tensor.zeros(config.batch_size, device=config.device)
 
 
@@ -87,6 +100,10 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
         value = Tensor(value)
         policy_logits = Tensor(policy_logits)
+
+        policy_loss += -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, step_i + 1]).sum(1)
+        value_loss += config.scalar_value_loss(value, target_value_phi[:, step_i + 1])
+        reward_loss += config.scalar_reward_loss(reward, target_reward_phi[:, step_i])
 
 
         # TODO: apply the scalar transforms
