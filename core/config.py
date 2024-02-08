@@ -65,7 +65,7 @@ class BaseMuZeroConfig(object):
         self.num_unroll_steps = 5
         self.td_steps = td_steps
         self.value_loss_coeff = value_loss_coeff
-        self.device = 'cpu'
+        self.device = 'gpu'
         self.exp_path = None  # experiment path
         self.debug = False
         self.model_path = None

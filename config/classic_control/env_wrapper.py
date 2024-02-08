@@ -37,7 +37,6 @@ class ClassicControlWrapper(Game):
 
     def obs(self, i):
         frames = self.obs_history[i:i + self.k]
-
         return np.array(frames).flatten()
 
     def close(self):

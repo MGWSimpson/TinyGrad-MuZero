@@ -28,8 +28,6 @@ class ReplayBuffer(object):
 
 
         for idx in indices:
-
-            game_id , game_pos = self.game_look_up[idx]
             game_id, game_pos = self.game_look_up[idx]
             game_id -= self.base_idx
             game = self.buffer[game_id]
@@ -46,15 +44,6 @@ class ReplayBuffer(object):
             value_batch.append(value)
             policy_batch.append(policy)
 
-
-
-        obs_batch = Tensor(obs_batch)
-        action_batch = Tensor(action_batch)
-        reward_batch = Tensor(reward_batch)
-
-        print(value_batch)
-        value_batch = Tensor(value_batch)
-        policy_batch = Tensor(policy_batch)
 
         return obs_batch, action_batch, reward_batch, value_batch, policy_batch, indices
 

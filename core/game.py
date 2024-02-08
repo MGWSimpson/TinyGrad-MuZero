@@ -100,7 +100,8 @@ class Game:
             bootstrap_index = current_index + td_steps
             if bootstrap_index < len(self.root_values):
                 if model is None:
-                    value = self.root_values[bootstrap_index] * self.discount ** td_steps
+                    value = self.root_values[bootstrap_index].squeeze() * self.discount ** td_steps
+
                 else:
                     """# Reference : Appendix H => Reanalyze
                     # Note : a target network  based on recent parameters is used to provide a fresher,
@@ -149,11 +150,8 @@ class Game:
                 # Note: Target policy is  set to 0 so that no policy loss is calculated for them
                 target_policies.append([0 for _ in range(len(self.child_visits[0]))])
 
-            return target_values, target_rewards, target_policies
+        return target_values, target_rewards, target_policies
 
-
-
-        pass
 
     def action_history(self, idx=None):
         if idx is None:
