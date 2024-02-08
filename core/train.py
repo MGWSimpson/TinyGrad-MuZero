@@ -71,22 +71,31 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
 
     value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
+    value = Tensor(value)
+    policy_logits = Tensor(policy_logits)
 
-    value_loss = 0
-    policy_loss= 0
-    reward_loss = 0
+
+
+    value_loss = - (target_value[:, 0] - value)
+    policy_loss= -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
+    reward_loss = Tensor.zeros(config.batch_size, device=config.device)
+
+
+
+    for step_i in range(config.num_unroll_steps):
+        value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
+
+        value = Tensor(value)
+        policy_logits = Tensor(policy_logits)
+
+
+        # TODO: apply the scalar transforms
+
+        # register hook...
 
 
     # compute loss
     gradient_scale = 1 / config.num_unroll_steps
-    for step_i in range(config.num_unroll_steps):
-        value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
-        policy_loss += 0
-        value_loss += 0
-        reward_loss += 0
-
-        # register hook...
-
     # optimize
     loss = (policy_loss + config.value_loss_coeff * value_loss + reward_loss)
 
