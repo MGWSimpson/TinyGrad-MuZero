@@ -5,14 +5,18 @@ import time
 from core.data_worker import DataWorker
 from core.shared_storage import SharedStorage
 from core.replay_buffer import ReplayBuffer
-from core.utils import adjust_lr, soft_update
+from core.utils import soft_update
 
 def _train(config, shared_storage, replay_buffer):
 
     model = config.get_uniform_network()
     target_model = config.get_uniform_network()
 
-    optim = nn.optim.Adam(params=None, lr=config.lr_init,)
+
+
+    optim = nn.optim.Adam(params=model.get_weights(in_np=False), lr=config.lr_init,)
+
+
 
     while ray.get(replay_buffer.size.remote()) == 0:
         pass
@@ -22,7 +26,6 @@ def _train(config, shared_storage, replay_buffer):
 
         shared_storage.incr_counter.remote()
 
-        lr = adjust_lr(config, optim, step_count)
 
         if step_count % config.checkpoint_interval == 0:  ## after a certain number of training steps, save the model so the workers can use it
             shared_storage.set_weights.remote(model.get_weights())
@@ -42,7 +45,10 @@ def _train(config, shared_storage, replay_buffer):
 
 
 def update_weights(model, target_model, optim, replay_buffer, config):
-    batch = ray.get(replay_buffer.sample_batch.remote(config.num_unroll_steps))
+
+    batch = ray.get(replay_buffer.sample_batch.remote(config.num_unroll_steps, config.td_steps,
+                                                      model=None,
+                                                      config=config))
 
     obs_batch, action_batch, target_reward, target_value, target_policy, indices = batch
 
@@ -54,10 +60,33 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
     value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
 
+    value_loss = 0
+    policy_loss= 0
+    reward_loss = 0
 
 
-    predicted_values, predicted_rewards, predicted_policies = value, None, policy_logits.softmax()
+    # compute loss
+    gradient_scale = 1 / config.num_unroll_steps
+    for step_i in range(config.num_unroll_steps):
+        value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
+        policy_loss += 0
+        value_loss += 0
+        reward_loss += 0
 
+        # register hook...
+
+    # optimize
+    loss = (policy_loss + config.value_loss_coeff * value_loss + reward_loss)
+    loss = loss.mean()
+
+    optim.zero_grad()
+    loss.backward()
+
+    # clip gradients...
+    optim.step()
+
+
+    # return logging info
 
 
 

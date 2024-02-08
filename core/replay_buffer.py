@@ -20,7 +20,7 @@ class ReplayBuffer(object):
     """
     Uniform random sampling
     """
-    def sample_batch(self, num_unroll_steps: int):
+    def sample_batch(self, num_unroll_steps: int,td_steps: int,  model=None, config=None ):
         obs_batch, action_batch, reward_batch, value_batch, policy_batch = [], [], [], [], []
 
         # Sample from game positions
@@ -28,17 +28,31 @@ class ReplayBuffer(object):
 
 
         for idx in indices:
-            game_id, game_pos = self.game_look_up[idx] # get the game the position relates to
+
+            game_id , game_pos = self.game_look_up[idx]
+            game_id, game_pos = self.game_look_up[idx]
             game_id -= self.base_idx
             game = self.buffer[game_id]
-            #TODO: run re-analyze
-            #TODO extract info from games...
-            pass
+            _actions = game.history[game_pos:game_pos + num_unroll_steps]
+            # random action selection to complete num_unroll_steps
+            _actions += [np.random.randint(0, game.action_space_size)
+                         for _ in range(num_unroll_steps - len(_actions))]
+
+            obs_batch.append(game.obs(game_pos))
+            action_batch.append(_actions)
+
+            value, reward, policy = game.make_target(game_pos, num_unroll_steps, td_steps, model, config)
+            reward_batch.append(reward)
+            value_batch.append(value)
+            policy_batch.append(policy)
+
 
 
         obs_batch = Tensor(obs_batch)
         action_batch = Tensor(action_batch)
         reward_batch = Tensor(reward_batch)
+
+        print(value_batch)
         value_batch = Tensor(value_batch)
         policy_batch = Tensor(policy_batch)
 

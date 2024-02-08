@@ -55,10 +55,8 @@ class DataWorker(object):
                     eps_steps += 1
                     visit_entropies += visit_entropy
 
-
                 env.close()
                 self.replay_buffer.save_game.remote(env)
-                self.shared_storage.incr_counter.remote() # TODO: remove this
 
         except Exception as e:
             print(traceback.format_exc())

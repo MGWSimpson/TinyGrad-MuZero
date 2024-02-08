@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import entropy
-
+from tinygrad import Tensor
 
 def select_action(node, temperature, deterministic=True):
     visit_counts = [(child.visit_count, action) for action, child in node.children.items()]
@@ -17,17 +17,12 @@ def select_action(node, temperature, deterministic=True):
 
 
 
-def adjust_lr(config, optimizer, step_count):
-    lr = config.lr_init * config.lr_decay_rate ** (step_count / config.lr_decay_steps)
-    lr = max(lr, 0.001)
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-    return lr
-
-
-
 def soft_update(target, source, tau):
     for target_param, param in zip(target.parameters(), source.parameters()):
         target_param.data.copy_(
             target_param.data * (1.0 - tau) + param.data * tau
         )
+
+
+
+

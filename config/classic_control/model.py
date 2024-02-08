@@ -70,18 +70,11 @@ class MuZeroNet(BaseMuZeroNet):
         assert len(state.shape) == 2
         assert action.shape[1] == 1
 
-
-
-
-
         action_one_hot = np.zeros((action.shape[0], self.action_space_n))
 
         action_one_hot[0][action[0][0].numpy()] = 1.0
 
         action_one_hot = Tensor(action_one_hot, dtype=dtypes.float32)
-
-
-
 
         x =  Tensor(state).cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)
@@ -92,13 +85,16 @@ class MuZeroNet(BaseMuZeroNet):
     """
     Weights returned as numpy array
     """
-    def get_weights(self):
+    def get_weights(self, in_np=True):
         weights = []
         for network in self.networks:
             for layer in network.layers:
                 if isinstance(layer, nn.Linear):
-                    weights.append(layer.weight.numpy())
 
+                    if in_np:
+                        weights.append(layer.weight.numpy())
+                    else:
+                        weights.append(layer.weight)
         return weights
 
 
@@ -112,4 +108,8 @@ class MuZeroNet(BaseMuZeroNet):
                 if isinstance(layer, nn.Linear) and weight_pointer < len(weights):
                     layer.weight = Tensor(weights[weight_pointer])
                     weight_pointer +=1
+
+
+
+
 

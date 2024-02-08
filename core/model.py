@@ -34,7 +34,7 @@ class BaseMuZeroNet:
         return NetworkOutput(value, reward, actor_logit, state)
 
     def get_weights(self):
-        raise NotImplementedError # TODO
+        raise NotImplementedError
 
     def set_weights(self, weights):
-        raise NotImplementedError # TODO
+        raise NotImplementedError
