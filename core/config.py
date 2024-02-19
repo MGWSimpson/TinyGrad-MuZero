@@ -5,6 +5,9 @@ from abc import abstractmethod
 
 from tinygrad import Tensor
 
+import numpy as np
+
+
 class DiscreteSupport:
     def __init__(self, min: int, max: int):
         assert min < max
@@ -117,16 +120,82 @@ class BaseMuZeroConfig(object):
         """ Reference : Appendix F => Network Architecture
         & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
         """
+
         logits = Tensor(logits)
+
         value_probs = Tensor.softmax(logits, axis=1)
         value_support = Tensor.ones(value_probs.shape)
-        value_support[:, :] = Tensor([x for x in scalar_support.range])
+        
+        value_support = Tensor([[x for x in scalar_support.range]])
+        
         value_support = value_support.to(device=value_probs.device)
-        value = (value_support * value_probs).sum(1, keepdim=True)
+
+        
+        value = (value_support * value_probs).sum(axis=1, keepdim=True)
+
+        
 
         epsilon = 0.001
         sign = Tensor.ones(value.shape).float().to(value.device)
-        sign[value < 0] = -1.0
+        
+
+        #sign[value < 0] = -1.0 ?? 
+
         output = (((Tensor.sqrt(1 + 4 * epsilon * (Tensor.abs(value) + 1 + epsilon)) - 1) / (2 * epsilon)) ** 2 - 1)
         output = sign * output
+        return output.numpy()
+
+    
+    @staticmethod
+    def scalar_transform(x):
+        """ Reference : Appendix F => Network Architecture
+        & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
+        """
+        epsilon = 0.001
+        sign = Tensor.ones(x.shape).float().to(x.device)
+        #sign[x < 0] = -1.0 ??
+        output = sign * (Tensor.sqrt(Tensor.abs(x) + 1) - 1 + epsilon * x)
         return output
+
+    def value_phi(self, x):
+        return self._phi(x, self.value_support.min, self.value_support.max, self.value_support.size)
+
+    def reward_phi(self, x):
+        return self._phi(x, self.reward_support.min, self.reward_support.max, self.reward_support.size)
+
+    @staticmethod
+    def _phi(x, min, max, set_size: int):
+        
+
+        x = x.numpy()
+
+        x = np.clip(x, a_max=max, a_min=min)
+        
+
+        x_low = Tensor(np.floor(x ))
+        x_high = Tensor(np.ceil(x))
+
+
+        x = Tensor(x)
+
+        p_high = (x - x_low)
+        p_low = 1 - p_high
+
+        
+
+        target = Tensor.zeros(x.shape[0], x.shape[1], set_size).to(x.device)
+
+        x_high_idx, x_low_idx = x_high - min, x_low - min
+        
+
+        
+
+        #target.scatter_(2, x_high_idx.long().unsqueeze(-1), p_high.unsqueeze(-1)) TODO
+        #target.scatter_(2, x_low_idx.long().unsqueeze(-1), p_low.unsqueeze(-1))
+        return target.numpy()
+
+    def scalar_reward_loss(self, prediction, target):
+        return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
+
+    def scalar_value_loss(self, prediction, target):
+        return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)

@@ -70,20 +70,22 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     target_policy = target_policy.to(config.device)
 
 
+    
     # transform targets to categorical rep
     transformed_target_reward = config.scalar_transform(target_reward)
-    target_reward_phi = config.reward_phi(transformed_target_reward)
+    target_reward_phi = Tensor(config.reward_phi(transformed_target_reward))
     transformed_target_value = config.scalar_transform(target_value)
-    target_value_phi = config.value_phi(transformed_target_value)
+    target_value_phi = Tensor(config.value_phi(transformed_target_value))
 
 
 
 
 
     value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
-    value = Tensor(value)
+    
     scaled_value = config.inverse_value_transform(value)
 
+    scaled_value = Tensor(scaled_value)
     policy_logits = Tensor(policy_logits)
 
 
@@ -104,10 +106,6 @@ def update_weights(model, target_model, optim, replay_buffer, config):
         policy_loss += -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, step_i + 1]).sum(1)
         value_loss += config.scalar_value_loss(value, target_value_phi[:, step_i + 1])
         reward_loss += config.scalar_reward_loss(reward, target_reward_phi[:, step_i])
-
-
-        # TODO: apply the scalar transforms
-
         # register hook...
 
 
