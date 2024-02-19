@@ -68,14 +68,15 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     target_reward = target_reward.to(config.device)
     target_value = target_value.to(config.device)
     target_policy = target_policy.to(config.device)
-
+    
+    
 
     
     # transform targets to categorical rep
     transformed_target_reward = config.scalar_transform(target_reward)
-    target_reward_phi = Tensor(config.reward_phi(transformed_target_reward))
+    target_reward_phi = config.reward_phi(transformed_target_reward)
     transformed_target_value = config.scalar_transform(target_value)
-    target_value_phi = Tensor(config.value_phi(transformed_target_value))
+    target_value_phi = config.value_phi(transformed_target_value)
 
 
 
@@ -83,7 +84,12 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
     value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
     
+
+
     scaled_value = config.inverse_value_transform(value)
+
+
+    value = Tensor(value)
 
     scaled_value = Tensor(scaled_value)
     policy_logits = Tensor(policy_logits)
@@ -101,6 +107,7 @@ def update_weights(model, target_model, optim, replay_buffer, config):
         value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
 
         value = Tensor(value)
+        reward = Tensor(reward)
         policy_logits = Tensor(policy_logits)
 
         policy_loss += -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, step_i + 1]).sum(1)
@@ -116,6 +123,8 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
 
     loss = loss.mean()
+
+    print(loss.numpy())
 
     optim.zero_grad()
     loss.backward()

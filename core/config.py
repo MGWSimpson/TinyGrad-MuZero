@@ -116,6 +116,9 @@ class BaseMuZeroConfig(object):
     def inverse_value_transform(self, value_logits):
         return self.inverse_scalar_transform(value_logits, self.value_support)
 
+    """
+    Takes in a numpy, returns a numpy
+    """
     def inverse_scalar_transform(self, logits, scalar_support):
         """ Reference : Appendix F => Network Architecture
         & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
@@ -146,6 +149,10 @@ class BaseMuZeroConfig(object):
         return output.numpy()
 
     
+    """
+    Takes in a tensor
+    Returns a tensor
+    """
     @staticmethod
     def scalar_transform(x):
         """ Reference : Appendix F => Network Architecture
@@ -163,6 +170,11 @@ class BaseMuZeroConfig(object):
     def reward_phi(self, x):
         return self._phi(x, self.reward_support.min, self.reward_support.max, self.reward_support.size)
 
+
+    """
+    X is a tensor
+    Returns a tensor
+    """
     @staticmethod
     def _phi(x, min, max, set_size: int):
         
@@ -192,10 +204,19 @@ class BaseMuZeroConfig(object):
 
         #target.scatter_(2, x_high_idx.long().unsqueeze(-1), p_high.unsqueeze(-1)) TODO
         #target.scatter_(2, x_low_idx.long().unsqueeze(-1), p_low.unsqueeze(-1))
-        return target.numpy()
+        return target
+    
 
+    """
+    Takes in a Tensors
+    Returns a Tensor
+    """
     def scalar_reward_loss(self, prediction, target):
         return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
 
+    """
+    Takes in a a tensor
+    Returns a tensor
+    """
     def scalar_value_loss(self, prediction, target):
         return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
