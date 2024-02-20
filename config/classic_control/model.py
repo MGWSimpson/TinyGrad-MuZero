@@ -22,7 +22,7 @@ class TinyNet:
 
 
 class MuZeroNet(BaseMuZeroNet):
-    def __init__(self, input_size, action_space_n, reward_support_size, value_support_size, inverse_value_transform, inverse_reward_transform):
+    def __init__(self, input_size, action_space_n, reward_support_size, value_support_size, inverse_value_transform=None, inverse_reward_transform=None):
         super(MuZeroNet, self).__init__(inverse_value_transform=inverse_value_transform, inverse_reward_transform=inverse_reward_transform)
         self.hx_size = 32
         self._representation = TinyNet([nn.Linear(input_size, self.hx_size),
@@ -51,6 +51,7 @@ class MuZeroNet(BaseMuZeroNet):
         # need method to iteratively access all layers of all networks
         self.networks = [self._representation, self._dynamics_state, self._dynamics_reward,
                          self._prediction_actor, self._prediction_value]
+        
         """
         self._prediction_value[-1].weight.data.fill_(0)
         self._prediction_value[-1].bias.data.fill_(0)
@@ -58,28 +59,33 @@ class MuZeroNet(BaseMuZeroNet):
         self._dynamics_reward[-1].bias.data.fill_(0)
         """
 
+
+    """
+    Takes in a Tensor
+    returns tensor
+    """ 
     def prediction(self, state):
-        actor_logit = self._prediction_actor(Tensor(state))
-        value = self._prediction_value(Tensor(state))
-        return actor_logit.numpy(), value.numpy()
+        actor_logit = self._prediction_actor(state)
+        value = self._prediction_value(state)
+        return actor_logit, value
 
     def representation(self, obs_history):
-        return self._representation(obs_history).numpy()
+        return self._representation(obs_history)
 
     def dynamics(self, state, action):
+    
         assert len(state.shape) == 2
         assert action.shape[1] == 1
-
+        
         action_one_hot = np.zeros((action.shape[0], self.action_space_n))
-
         action_one_hot[0][action[0][0].numpy()] = 1.0
-
         action_one_hot = Tensor(action_one_hot, dtype=dtypes.float32)
 
-        x =  Tensor(state).cat(action_one_hot, dim=1)
+        x =  state.cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)
         reward = self._dynamics_reward(x)
-        return next_state.numpy(), reward.numpy()
+
+        return next_state, reward
 
 
     """

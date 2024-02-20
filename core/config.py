@@ -124,7 +124,7 @@ class BaseMuZeroConfig(object):
         & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
         """
 
-        logits = Tensor(logits)
+        #logits = Tensor(logits)
 
         value_probs = Tensor.softmax(logits, axis=1)
         value_support = Tensor.ones(value_probs.shape)

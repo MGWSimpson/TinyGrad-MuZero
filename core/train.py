@@ -17,7 +17,7 @@ def _train(config, shared_storage, replay_buffer):
 
 
 
-    optim = nn.optim.Adam(params=model.get_weights(in_np=False), lr=config.lr_init,)
+    optim = nn.optim.Adam(params=nn.state.get_parameters([model._dynamics_reward, model._prediction_actor, model._prediction_value]), lr=0.001)
 
 
 
@@ -86,17 +86,7 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     
 
 
-    scaled_value = config.inverse_value_transform(value)
-
-
-    value = Tensor(value)
-
-    scaled_value = Tensor(scaled_value)
-    policy_logits = Tensor(policy_logits)
-
-
-
-
+   
     value_loss = config.scalar_value_loss(value, target_value_phi[:, 0])
     policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
     reward_loss = Tensor.zeros(config.batch_size, device=config.device)
@@ -105,31 +95,24 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
     for step_i in range(config.num_unroll_steps):
         value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
-
-        value = Tensor(value)
-        reward = Tensor(reward)
-        policy_logits = Tensor(policy_logits)
-
+        
         policy_loss += -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, step_i + 1]).sum(1)
         value_loss += config.scalar_value_loss(value, target_value_phi[:, step_i + 1])
         reward_loss += config.scalar_reward_loss(reward, target_reward_phi[:, step_i])
         # register hook...
 
 
+    optim.zero_grad()
     # compute loss
     gradient_scale = 1 / config.num_unroll_steps
     # optimize
     loss = (policy_loss + config.value_loss_coeff * value_loss + reward_loss)
-
-
+    
+    
     loss = loss.mean()
 
-    print(loss.numpy())
 
-    optim.zero_grad()
     loss.backward()
-
-    # clip gradients...
     optim.step()
 
     print("Step")
