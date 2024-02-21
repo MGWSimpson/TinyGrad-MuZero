@@ -73,7 +73,7 @@ class MuZeroNet(BaseMuZeroNet):
         return self._representation(obs_history)
 
     def dynamics(self, state, action):
-    
+       
         assert len(state.shape) == 2
         assert action.shape[1] == 1
         
@@ -81,6 +81,7 @@ class MuZeroNet(BaseMuZeroNet):
         action_one_hot[0][action[0][0].numpy()] = 1.0
         action_one_hot = Tensor(action_one_hot, dtype=dtypes.float32)
 
+        
         x =  state.cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)
         reward = self._dynamics_reward(x)

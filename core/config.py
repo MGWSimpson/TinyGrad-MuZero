@@ -67,7 +67,7 @@ class BaseMuZeroConfig(object):
         self.checkpoint_interval = checkpoint_interval
         self.window_size = window_size
         self.batch_size = batch_size
-        self.num_unroll_steps = 5
+        self.num_unroll_steps = 3
         self.td_steps = td_steps
         self.value_loss_coeff = value_loss_coeff
         self.device = 'gpu'
@@ -212,6 +212,8 @@ class BaseMuZeroConfig(object):
     Returns a Tensor
     """
     def scalar_reward_loss(self, prediction, target):
+
+        
         return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
 
     """
