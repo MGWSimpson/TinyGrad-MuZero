@@ -43,13 +43,8 @@ target_value = Tensor.rand(2,5)
 target_policy = Tensor.rand(2,5, 2)
 
 
-"""
-print(obs_batch)
-print(action_batch)
-print(target_reward)
-print(target_value)
-print(target_policy)
-"""
+
+
 # transform targets to categorical rep
 transformed_target_reward = config.scalar_transform(target_reward)
 target_reward_phi = config.reward_phi(transformed_target_reward)
@@ -85,7 +80,9 @@ for step_i in range(1 ):
         
     
    
-
+print(policy_loss)
+print(value_loss)
+print(policy_loss)
 
     
 optim.zero_grad()

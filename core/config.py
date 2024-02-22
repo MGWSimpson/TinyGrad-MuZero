@@ -213,7 +213,6 @@ class BaseMuZeroConfig(object):
     """
     def scalar_reward_loss(self, prediction, target):
 
-        
         return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
 
     """
