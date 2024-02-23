@@ -1,7 +1,7 @@
 import typing
 from typing import Dict, List
 from .game import Action
-
+from tinygrad import Tensor
 
 class NetworkOutput(typing.NamedTuple):
     value:float
@@ -30,14 +30,19 @@ class BaseMuZeroNet:
         state = self.representation(obs)
         actor_logit, value = self.prediction(state)
 
+        rnd_action = Tensor.ones((2,1))
+        hidden_state, reward = self.dynamics(state, rnd_action)
+       
         if not self.training:
             value = self.inverse_value_transform(value)
 
-        return NetworkOutput(value, 0, actor_logit, state)
+        return NetworkOutput(value, reward, actor_logit, state)
+
 
     def recurrent_inference(self, hidden_state, action) -> NetworkOutput:
         state, reward = self.dynamics(hidden_state, action)
         actor_logit, value = self.prediction(state)
+
         
         if not self.training:
             value = self.inverse_value_transform(value)

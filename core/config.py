@@ -7,6 +7,9 @@ from tinygrad import Tensor
 
 import numpy as np
 
+from core.utils import clamp, my_scatter
+
+import math
 
 class DiscreteSupport:
     def __init__(self, min: int, max: int):
@@ -117,36 +120,26 @@ class BaseMuZeroConfig(object):
         return self.inverse_scalar_transform(value_logits, self.value_support)
 
     """
-    Takes in a numpy, returns a numpy
+    Takes in a Tensor, returns a Tensor
     """
     def inverse_scalar_transform(self, logits, scalar_support):
-        """ Reference : Appendix F => Network Architecture
-        & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
-        """
-
-        #logits = Tensor(logits)
-
         value_probs = Tensor.softmax(logits, axis=1)
+
         value_support = Tensor.ones(value_probs.shape)
-        
         value_support = Tensor([[x for x in scalar_support.range]])
         
-        value_support = value_support.to(device=value_probs.device)
-
+        value = (value_support * value_probs).sum(1, keepdim=True)
         
-        value = (value_support * value_probs).sum(axis=1, keepdim=True)
-
-        
+        assert (value >= -1 or value <=1).numpy().all()
 
         epsilon = 0.001
-        sign = Tensor.ones(value.shape).float().to(value.device)
+        sign = Tensor.floor(value) + Tensor.ceil(value)
         
-
-        #sign[value < 0] = -1.0 ?? 
-
         output = (((Tensor.sqrt(1 + 4 * epsilon * (Tensor.abs(value) + 1 + epsilon)) - 1) / (2 * epsilon)) ** 2 - 1)
         output = sign * output
-        return output.numpy()
+
+        
+        return output
 
     
     """
@@ -155,14 +148,14 @@ class BaseMuZeroConfig(object):
     """
     @staticmethod
     def scalar_transform(x):
-        """ Reference : Appendix F => Network Architecture
-        & Appendix A : Proposition A.2 in https://arxiv.org/pdf/1805.11593.pdf (Page-11)
-        """
+        assert (x >= -1 or x <=1).numpy().all()
+
         epsilon = 0.001
-        sign = Tensor.ones(x.shape).float().to(x.device)
-        #sign[x < 0] = -1.0 ??
+        sign = Tensor.floor(x) + Tensor.ceil(x)
+        
         output = sign * (Tensor.sqrt(Tensor.abs(x) + 1) - 1 + epsilon * x)
         return output
+
 
     def value_phi(self, x):
         return self._phi(x, self.value_support.min, self.value_support.max, self.value_support.size)
@@ -170,7 +163,8 @@ class BaseMuZeroConfig(object):
     def reward_phi(self, x):
         return self._phi(x, self.reward_support.min, self.reward_support.max, self.reward_support.size)
 
-
+  
+    
     """
     X is a tensor
     Returns a tensor
@@ -178,33 +172,14 @@ class BaseMuZeroConfig(object):
     @staticmethod
     def _phi(x, min, max, set_size: int):
         
-
-        x = x.numpy()
-
-        x = np.clip(x, a_max=max, a_min=min)
-        
-
-        x_low = Tensor(np.floor(x ))
-        x_high = Tensor(np.ceil(x))
-
-
-        x = Tensor(x)
-
+        x = clamp(x, min= min, max=max)
+        x_low = x.floor()
+        x_high = x.ceil()
         p_high = (x - x_low)
         p_low = 1 - p_high
+        x_high_idx, x_low_idx = math.floor(((x_high - min)[0][0]).item()), math.floor(((x_low - min)[0][0]).item())
+        return my_scatter(p_high ,x_high_idx, set_size) + my_scatter(p_low, x_low_idx, set_size)
 
-        
-
-        target = Tensor.zeros(x.shape[0], x.shape[1], set_size).to(x.device)
-
-        x_high_idx, x_low_idx = x_high - min, x_low - min
-        
-
-        
-
-        #target.scatter_(2, x_high_idx.long().unsqueeze(-1), p_high.unsqueeze(-1)) TODO
-        #target.scatter_(2, x_low_idx.long().unsqueeze(-1), p_low.unsqueeze(-1))
-        return target
     
 
     """
@@ -212,7 +187,6 @@ class BaseMuZeroConfig(object):
     Returns a Tensor
     """
     def scalar_reward_loss(self, prediction, target):
-
         return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
 
     """

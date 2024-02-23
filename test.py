@@ -32,12 +32,11 @@ model = MuZeroNet(input_size=4, action_space_n=2, value_support_size=value_suppo
 
 
 
-optim = nn.optim.Adam(params=nn.state.get_parameters([model._dynamics_reward, model._prediction_actor, model._prediction_value]), lr=0.001)
-
+optim = nn.optim.Adam(params=nn.state.get_parameters([model._dynamics_reward]), lr=0.001)
 
 arr = np.random.rand(2,3)
 action_batch = Tensor(arr, dtype=dtypes.int32).unsqueeze(-1)
-obs_batch = Tensor.rand(2,4)
+obs_batch = Tensor.rand((2,4))
 target_reward = Tensor.rand(2,5)
 target_value = Tensor.rand(2,5)
 target_policy = Tensor.rand(2,5, 2)
@@ -55,45 +54,49 @@ target_value_phi = config.value_phi(transformed_target_value)
 
 
 
-value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
+value, reward , policy_logits, hidden_state = model.initial_inference(obs_batch)
 
 
-
+print(reward)
 
 value_loss = config.scalar_value_loss(value, target_value_phi[:, 0])
 policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
-reward_loss = Tensor.zeros(2, device=config.device)
+reward_loss =  config.scalar_reward_loss(reward, target_reward_phi[:,  0])
+
 
 for step_i in range(1 ):
-    
+
     value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
 
    
   
     policy_loss += -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, step_i + 1]).sum(1)
 
-
     value_loss += config.scalar_value_loss(value, target_value_phi[:, step_i + 1])
 
     
     reward_loss += config.scalar_reward_loss(reward, target_reward_phi[:, step_i])
+
+  
+    
+   
         
     
    
-print(policy_loss)
-print(value_loss)
-print(policy_loss)
 
     
 optim.zero_grad()
 
-loss = (value_loss + reward_loss + policy_loss)
+
+
+loss = (reward_loss )
+
+
 
 loss = loss.mean()
 
-loss.backward()
 
- 
+loss.backward()
 optim.step()
 print(loss.item())
 

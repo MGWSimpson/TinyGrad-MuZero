@@ -28,12 +28,12 @@ class MuZeroNet(BaseMuZeroNet):
         self._representation = TinyNet([nn.Linear(input_size, self.hx_size),
                                 Tensor.tanh])
 
-        self._dynamics_state = TinyNet([nn.Linear(self.hx_size + action_space_n, 64),
+        self._dynamics_state = TinyNet([nn.Linear((self.hx_size + action_space_n), 64),
                                 Tensor.tanh,
                                 nn.Linear(64, self.hx_size),
                                 Tensor.tanh])
 
-        self._dynamics_reward = TinyNet([nn.Linear(self.hx_size + action_space_n, 64),
+        self._dynamics_reward = TinyNet([nn.Linear((self.hx_size + action_space_n), 64),
                                  Tensor.leakyrelu,
                                  nn.Linear(64, reward_support_size)])
 
@@ -72,16 +72,12 @@ class MuZeroNet(BaseMuZeroNet):
     def representation(self, obs_history):
         return self._representation(obs_history)
 
-    def dynamics(self, state, action):
+    def dynamics(self, state: Tensor, action: Tensor):
        
-        assert len(state.shape) == 2
-        assert action.shape[1] == 1
+        """assert len(state.shape) == 2
+        assert action.shape[1] == 1"""
         
-        action_one_hot = np.zeros((action.shape[0], self.action_space_n))
-        action_one_hot[0][action[0][0].numpy()] = 1.0
-        action_one_hot = Tensor(action_one_hot, dtype=dtypes.float32)
-
-        
+        action_one_hot = action.one_hot(self.action_space_n).squeeze(1)
         x =  state.cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)
         reward = self._dynamics_reward(x)

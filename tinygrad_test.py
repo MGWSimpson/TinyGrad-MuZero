@@ -89,10 +89,12 @@ def main():
 
     discrete_support = DiscreteSupport(-2, 2 )
 
-    x = Tensor.randn(2,3)
+    x = Tensor.randn(2,5)
 
-   
-    print( _phi(x, discrete_support.min, discrete_support.max, discrete_support.size).numpy())
+    x = Tensor([[0], [0]])
+
+    
+    print(x.one_hot(4).numpy())
     pass
 
 

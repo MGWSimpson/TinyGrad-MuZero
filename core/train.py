@@ -70,14 +70,9 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     target_policy = target_policy.to(config.device)
     
     
-    print(obs_batch)
-    print(action_batch)
-    print(target_reward)
-    print(target_value)
-    print(target_policy)
-    
+   
 
-    assert False
+  
     
 
     
