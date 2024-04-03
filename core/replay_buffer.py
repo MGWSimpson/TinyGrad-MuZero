@@ -32,12 +32,10 @@ class ReplayBuffer(object):
             game_id -= self.base_idx
             game = self.buffer[game_id]
 
-            obs_history,history,rewards,action_space_size,discount = game
-            
-
-            _actions = history[game_pos:game_pos + num_unroll_steps]
+           
+            _actions = game.history[game_pos:game_pos + num_unroll_steps]
             # random action selection to complete num_unroll_steps
-            _actions += [np.random.randint(0, action_space_size)
+            _actions += [np.random.randint(0, game.action_space_size)
                          for _ in range(num_unroll_steps - len(_actions))]
 
             obs_batch.append(game.obs(game_pos))

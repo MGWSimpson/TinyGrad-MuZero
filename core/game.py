@@ -76,8 +76,6 @@ class Game:
         self.discount = discount
         self.config = config
 
-        pass
-
     def legal_actions(self):
         raise NotImplementedError
 
@@ -174,10 +172,12 @@ class Game:
         if idx is None:
             self.child_visits.append([root.children[a].visit_count / sum_visits if a in root.children else 0
                                       for a in action_space])
-            self.root_values.append(root.value())
+            self.root_values.append(root.value().numpy())
+          
         else:
             self.child_visits[idx] = [root.children[a].visit_count / sum_visits if a in root.children else 0
-                                      for a in action_space]
-            self.root_values[idx] = root.value()
+                                     for a in action_space]
+            self.root_values[idx] = root.value().numpy() # store the tensors as numpy versions so its serializble, requires changes to the make target function
+
 
  

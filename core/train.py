@@ -61,6 +61,8 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     target_value = Tensor(target_value)
     target_policy = Tensor(target_policy)
 
+    
+    
 
 
     obs_batch = obs_batch.to(config.device)
@@ -129,11 +131,11 @@ def train(config,):
     storage = SharedStorage.remote(config.get_uniform_network().get_weights())
     replay_buffer = ReplayBuffer.remote(batch_size=config.batch_size, capacity=config.window_size)
     workers = [DataWorker.remote(rank, config, storage, replay_buffer)
-               for rank in range(0, config.num_actors)]
+               for rank in range(config.num_actors)]
     worker_waitables = [worker.run.remote() for worker in workers]
 
 
     _train(config, storage, replay_buffer)
-
+   
     ray.wait(ray_waitables=worker_waitables, num_returns=len(workers))
-    print(ray.get(replay_buffer.size.remote()))
+   

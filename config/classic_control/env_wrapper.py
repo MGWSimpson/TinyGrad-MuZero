@@ -5,9 +5,13 @@ import numpy as np
 from core.game import Game, Action
 
 
-
 class ClassicControlWrapper(Game):
     def __init__(self, env, k: int, discount: float):
+        """
+
+        :param env: instance of gym environment
+        :param k: no. of observations to stack
+        """
         super().__init__(env, env.action_space.n, discount)
         self.k = k
         self.frames = deque([], maxlen=k)
@@ -26,6 +30,7 @@ class ClassicControlWrapper(Game):
 
     def reset(self, **kwargs):
         obs, _ = self.env.reset(**kwargs)
+
         self.rewards = []
         self.history = []
         self.obs_history = []
@@ -37,9 +42,8 @@ class ClassicControlWrapper(Game):
 
     def obs(self, i):
         frames = self.obs_history[i:i + self.k]
+      
         return np.array(frames).flatten()
 
     def close(self):
         self.env.close()
-
-
