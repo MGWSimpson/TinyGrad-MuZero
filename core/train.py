@@ -88,12 +88,10 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
     value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
     
-
-
    
     value_loss = config.scalar_value_loss(value, target_value_phi[:, 0])
     policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
-    reward_loss = Tensor.zeros(config.batch_size, device=config.device)
+    reward_loss = config.scalar_reward_loss(reward, target_reward_phi[:,  0])
 
 
 

@@ -73,7 +73,7 @@ class MCTS(object):
 
             while node.expanded():
                 action, node = self.select_child(node, min_max_stats)
-                
+               
                 history.add_action(action)
                 search_path.append(node)
 

@@ -30,13 +30,11 @@ class BaseMuZeroNet:
         state = self.representation(obs)
         actor_logit, value = self.prediction(state)
 
-        rnd_action = Tensor.ones((2,1))
-        hidden_state, reward = self.dynamics(state, rnd_action)
-       
+      
         if not self.training:
             value = self.inverse_value_transform(value)
 
-        return NetworkOutput(value, reward, actor_logit, state)
+        return NetworkOutput(value, 0, actor_logit, state)
 
 
     def recurrent_inference(self, hidden_state, action) -> NetworkOutput:

@@ -1,4 +1,4 @@
-from typing import List
+
 
 import numpy as np
 
@@ -39,7 +39,7 @@ class ActionHistory(object):
     Only used to keep track of the actions executed.
     """
 
-    def __init__(self, history: List[Action], action_space_size: int):
+    def __init__(self, history, action_space_size: int):
         self.history = list(history)
         self.action_space_size = action_space_size
 
@@ -52,7 +52,7 @@ class ActionHistory(object):
     def last_action(self) -> Action:
         return self.history[-1]
 
-    def action_space(self) -> List[Action]:
+    def action_space(self):
         return [Action(i) for i in range(self.action_space_size)]
 
 
@@ -179,3 +179,5 @@ class Game:
             self.child_visits[idx] = [root.children[a].visit_count / sum_visits if a in root.children else 0
                                       for a in action_space]
             self.root_values[idx] = root.value()
+
+ 

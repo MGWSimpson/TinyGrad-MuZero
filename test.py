@@ -64,7 +64,7 @@ policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0])
 reward_loss =  config.scalar_reward_loss(reward, target_reward_phi[:,  0])
 
 
-for step_i in range(1 ):
+for step_i in range(3 ):
 
     value, reward, policy_logits, hidden_state = model.recurrent_inference(hidden_state, action_batch[:, step_i])
 

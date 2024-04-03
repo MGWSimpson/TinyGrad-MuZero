@@ -1,5 +1,6 @@
 import traceback
-
+import dill
+from core.game import ActionHistory
 import ray
 from core.mcts import MCTS, Node
 import tinygrad
@@ -45,8 +46,8 @@ class DataWorker(object):
                     root.add_exploration_noise(dirichlet_alpha=self.config.root_dirichlet_alpha,
                                                exploration_fraction=self.config.root_exploration_fraction)
 
-
-                    MCTS(self.config).run(root, env.action_history(), model)
+                    action_history = ActionHistory(env.history, env.action_space_size)
+                    MCTS(self.config).run(root,action_history, model)
                     action, visit_entropy = select_action(root, temperature=_temperature, deterministic=False)
                     obs, reward, done, info = env.step(action.index)
                     env.store_search_stats(root)
@@ -56,7 +57,8 @@ class DataWorker(object):
                     visit_entropies += visit_entropy
 
                 env.close()
-                self.replay_buffer.save_game.remote(env)
+             
+                self.replay_buffer.save_game.remote(env.to_saveable())
 
         except Exception as e:
             print(traceback.format_exc())

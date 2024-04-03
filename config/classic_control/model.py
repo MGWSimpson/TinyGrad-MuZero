@@ -78,6 +78,7 @@ class MuZeroNet(BaseMuZeroNet):
         assert action.shape[1] == 1"""
         
         action_one_hot = action.one_hot(self.action_space_n).squeeze(1)
+      
         x =  state.cat(action_one_hot, dim=1)
         next_state = self._dynamics_state(x)
         reward = self._dynamics_reward(x)
