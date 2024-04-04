@@ -74,9 +74,9 @@ class BaseMuZeroConfig(object):
         self.td_steps = td_steps
         self.value_loss_coeff = value_loss_coeff
         self.device = 'gpu'
-        self.exp_path = None  # experiment path
+        self.exp_path = './'  # experiment path
         self.debug = False
-        self.model_path = None
+        self.model_path = './model.tg'
         self.seed = None
         self.value_support = value_support
         self.reward_support = reward_support
@@ -148,7 +148,7 @@ class BaseMuZeroConfig(object):
     """
     @staticmethod
     def scalar_transform(x):
-        assert (x >= -1 or x <=1).numpy().all()
+        #TODO: unsure if assertion required, assert (x >= -1 or x <=1).numpy().all()
 
         epsilon = 0.001
         sign = Tensor.floor(x) + Tensor.ceil(x)
@@ -187,6 +187,9 @@ class BaseMuZeroConfig(object):
     Returns a Tensor
     """
     def scalar_reward_loss(self, prediction, target):
+        assert type(prediction) == Tensor
+        assert type(target) == Tensor
+
         return -(Tensor.log_softmax(prediction, axis=1) * target).sum(1)
 
     """

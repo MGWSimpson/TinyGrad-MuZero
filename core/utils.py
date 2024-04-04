@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import entropy
-from tinygrad import Tensor
+from tinygrad import Tensor, nn
 
 def select_action(node, temperature, deterministic=True):
     visit_counts = [(child.visit_count, action) for action, child in node.children.items()]
@@ -16,13 +16,16 @@ def select_action(node, temperature, deterministic=True):
     return visit_counts[action_pos][1], count_entropy
 
 
-
 def soft_update(target, source, tau):
-    for target_param, param in zip(target.parameters(), source.parameters()):
-        target_param.data.copy_(
-            target_param.data * (1.0 - tau) + param.data * tau
-        )
+    # TODO: Check new soft update is equivalent to the state dict method
+    source_weights = source.get_weights()
+    target_weights = target.get_weights() 
 
+    
+    for i in range(len(source_weights)):
+        target_weights[i] = target_weights[i] * (1.0 - tau) + source_weights[i] * tau
+
+    target.set_weights(target_weights)
 
 
 

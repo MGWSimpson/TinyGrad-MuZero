@@ -6,7 +6,7 @@ from core.data_worker import DataWorker
 from core.shared_storage import SharedStorage
 from core.replay_buffer import ReplayBuffer
 from core.utils import soft_update
-
+from core.test import test
 def _train(config, shared_storage, replay_buffer):
 
     model = config.get_uniform_network()
@@ -70,9 +70,6 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     target_reward = target_reward.to(config.device)
     target_value = target_value.to(config.device)
     target_policy = target_policy.to(config.device)
-    
-    
-   
 
   
     
@@ -88,13 +85,15 @@ def update_weights(model, target_model, optim, replay_buffer, config):
 
 
 
-    value, _, policy_logits, hidden_state = model.initial_inference(obs_batch)
+    value, reward, policy_logits, hidden_state = model.initial_inference(obs_batch)
     
    
+    
     value_loss = config.scalar_value_loss(value, target_value_phi[:, 0])
     policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
-    reward_loss = config.scalar_reward_loss(reward, target_reward_phi[:,  0])
+    reward_loss = Tensor.zeros(config.batch_size)
 
+    optim = nn.optim.Adam(params=[value_loss, policy_loss, reward_loss], lr=0.001)
 
 
     for step_i in range(config.num_unroll_steps):
@@ -124,6 +123,24 @@ def update_weights(model, target_model, optim, replay_buffer, config):
     # return logging info
 
 
+@ray.remote
+def _test(config, shared_storage): 
+    test_model = config.get_uniform_network()
+    best_test_score = float('-inf')
+   
+    while ray.get(shared_storage.get_counter.remote()) < config.training_steps:
+        test_model.set_weights(ray.get(shared_storage.get_weights.remote()))
+        test_model.eval()
+        test_score = test(config, test_model, config.test_episodes, 'cpu', False)
+        print(test_score)
+        if test_score >= best_test_score:
+            best_test_score = test_score
+            test_model_state_dict = nn.state.get_state_dict(test_model)
+            nn.state.safe_save(test_model_state_dict, 'model.tg')
+            
+        shared_storage.add_test_log.remote(test_score)
+        time.sleep(30)   
+
 
 
 def train(config,):
@@ -133,9 +150,7 @@ def train(config,):
     workers = [DataWorker.remote(rank, config, storage, replay_buffer)
                for rank in range(config.num_actors)]
     worker_waitables = [worker.run.remote() for worker in workers]
-
-
+    worker_waitables += [_test.remote(config, storage)]
     _train(config, storage, replay_buffer)
-   
-    ray.wait(ray_waitables=worker_waitables, num_returns=len(workers))
+    ray.wait(ray_waitables=worker_waitables, num_returns=len(worker_waitables))
    

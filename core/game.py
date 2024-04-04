@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from tinygrad import Tensor
 
 class Player(object):
     def __init__(self, id=1):
@@ -101,13 +102,13 @@ class Game:
                     value = self.root_values[bootstrap_index].squeeze() * self.discount ** td_steps
 
                 else:
-                    """# Reference : Appendix H => Reanalyze
+                    # Reference : Appendix H => Reanalyze
                     # Note : a target network  based on recent parameters is used to provide a fresher,
                     # stable n-step bootstrapped target for the value function
                     obs = self.obs(bootstrap_index)
-                    obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+                    obs = Tensor(obs).unsqueeze(0) # will see if the unsqueeze is necessary
                     network_output = model.initial_inference(obs)
-                    value = network_output.value.data.cpu().item() * self.discount ** td_steps"""
+                    value = network_output.value.data.cpu().item() * self.discount ** td_steps
                     pass
             else:
                 value = 0
@@ -129,14 +130,14 @@ class Game:
                 # latest model parameters, potentially resulting in a better quality policy than the original search.
                 # This fresh policy is used as the policy target for 80% of updates during MuZero training
                 if model is not None and np.random.random() <= config.revisit_policy_search_rate:
-                    """from core.mcts import MCTS, Node
+                    from core.mcts import MCTS, Node
                     root = Node(0)
                     obs = self.obs(current_index)
-                    obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
+                    obs = Tensor(obs).unsqueeze(0)
                     network_output = model.initial_inference(obs)
                     root.expand(self.to_play(), self.legal_actions(), network_output)
                     MCTS(config).run(root, self.action_history(current_index), model)
-                    self.store_search_stats(root, current_index)"""
+                    self.store_search_stats(root, current_index)
                     pass
 
                 target_policies.append(self.child_visits[current_index])

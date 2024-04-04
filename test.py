@@ -9,7 +9,7 @@ import argparse
 import numpy as np
 
 parser = argparse.ArgumentParser(description='MuZero Pytorch Implementation')
-parser.add_argument('--env', required=True, help='Name of the environment')
+parser.add_argument('--env', default="LunarLander-v2", help='Name of the environment')
 parser.add_argument('--num_actors', type=int, default=1,
                         help='Number of actors running concurrently (default: %(default)s)')
 parser.add_argument('--seed', type=int, default=0,
@@ -32,7 +32,6 @@ model = MuZeroNet(input_size=4, action_space_n=2, value_support_size=value_suppo
 
 
 
-optim = nn.optim.Adam(params=nn.state.get_parameters([model._dynamics_reward]), lr=0.001)
 
 arr = np.random.rand(2,3)
 action_batch = Tensor(arr, dtype=dtypes.int32).unsqueeze(-1)
@@ -54,15 +53,18 @@ target_value_phi = config.value_phi(transformed_target_value)
 
 
 
-value, reward , policy_logits, hidden_state = model.initial_inference(obs_batch)
+value, _ , policy_logits, hidden_state = model.initial_inference(obs_batch)
 
 
-print(reward)
+
 
 value_loss = config.scalar_value_loss(value, target_value_phi[:, 0])
 policy_loss = -(Tensor.log_softmax(policy_logits, axis=1) * target_policy[:, 0]).sum(1)
-reward_loss =  config.scalar_reward_loss(reward, target_reward_phi[:,  0])
+reward_loss =  Tensor.zeros((2,))
 
+optim = nn.optim.Adam(params=[value_loss, policy_loss, reward_loss], lr=0.001)
+
+model.params
 
 for step_i in range(3 ):
 
@@ -89,7 +91,7 @@ optim.zero_grad()
 
 
 
-loss = (reward_loss )
+loss = (policy_loss + config.value_loss_coeff * value_loss + reward_loss)
 
 
 

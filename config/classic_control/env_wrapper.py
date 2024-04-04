@@ -21,6 +21,7 @@ class ClassicControlWrapper(Game):
 
     def step(self, action):
         obs, reward, terminal, truncated, info = self.env.step(action)
+       
         done = terminal or truncated
         self.rewards.append(reward)
         self.history.append(action)

@@ -46,11 +46,12 @@ class DataWorker(object):
                     MCTS(self.config).run(root,action_history, model)
                     action, visit_entropy = select_action(root, temperature=_temperature, deterministic=False)
                     obs, reward, done, info = env.step(action.index)
-                    env.store_search_stats(root) #TODO: this throws a pickle error
+                    env.store_search_stats(root)
 
                     eps_reward += reward
                     eps_steps += 1
                     visit_entropies += visit_entropy
+                   
 
                 env.close()
                 self.replay_buffer.save_game.remote(env)

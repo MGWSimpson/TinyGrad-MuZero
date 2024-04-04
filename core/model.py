@@ -29,10 +29,10 @@ class BaseMuZeroNet:
     def initial_inference(self, obs) -> NetworkOutput:
         state = self.representation(obs)
         actor_logit, value = self.prediction(state)
-
-      
+        
         if not self.training:
             value = self.inverse_value_transform(value)
+           
 
         return NetworkOutput(value, 0, actor_logit, state)
 

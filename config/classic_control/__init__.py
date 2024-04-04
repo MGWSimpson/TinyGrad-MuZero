@@ -1,3 +1,5 @@
+from typing import Callable
+
 from core.config import BaseMuZeroConfig, DiscreteSupport
 from .model import MuZeroNet
 import gym
@@ -45,8 +47,13 @@ class ClassicControlConfig(BaseMuZeroConfig):
     def get_uniform_network(self):
         return MuZeroNet(self.obs_shape, self.action_space_size,  self.reward_support.size, self.value_support.size, inverse_value_transform=self.inverse_value_transform, inverse_reward_transform=self.inverse_reward_transform)
 
-    def new_game(self):
+    def new_game(self, save_video=False, save_path=None, episode_trigger: Callable[[int], bool] = None, uid=None):
         env = gym.make(self.env_name)
+        if save_video:
+            assert save_path is not None, 'save_path cannot be None if saving video'
+            from gym.wrappers import RecordVideo
+            env = RecordVideo(env, video_folder=save_path, episode_trigger=episode_trigger,
+                              name_prefix=f"rl-video-{uid}", new_step_api=True)
         return ClassicControlWrapper(env, discount=self.discount, k=4)
 
     def visit_softmax_temperature_fn(self, trained_steps):

@@ -1,7 +1,15 @@
-from tinygrad import Tensor
+from tinygrad import Tensor, nn
 from core.config import DiscreteSupport
 
 import math
+
+
+class LinearNet:
+  def __init__(self):
+    self.l1 = Tensor.kaiming_uniform(784, 128)
+    self.l2 = Tensor.kaiming_uniform(128, 10)
+  def __call__(self, x:Tensor) -> Tensor:
+    return x.flatten(1).dot(self.l1).relu().dot(self.l2)
 
 """ 
 Reference : Appendix F => Network Architecture
@@ -81,20 +89,27 @@ def _phi(x, min, max, set_size: int):
 
 
 
+def soft_update(target, source, tau):
+    target_state_dict = nn.state.get_state_dict(target)
+    source_state_dict = nn.state.get_state_dict(source)
+    for layer in target_state_dict:
+        target_state_dict[layer] = target_state_dict[layer] * (1.0 - tau) + source_state_dict[layer] * tau
+    
+    nn.state.load_state_dict(target, state_dict=target_state_dict)
+
+
+
+
 
 
 
 def main():
-    
+    source  = LinearNet()
+    target = LinearNet()
 
-    discrete_support = DiscreteSupport(-2, 2 )
+    tau=1e-2
 
-    x = Tensor.randn(2,5)
-
-    x = Tensor([[0], [0]])
-
-    
-    print(x.one_hot(4).numpy())
+    soft_update(target, source, tau)
     pass
 
 
