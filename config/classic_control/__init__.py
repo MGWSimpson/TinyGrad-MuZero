@@ -10,7 +10,7 @@ class ClassicControlConfig(BaseMuZeroConfig):
 
     def __init__(self, args):
         super(ClassicControlConfig, self).__init__(
-            training_steps=5,
+            training_steps=2,
             test_interval=100,
             test_episodes=5,
             checkpoint_interval=20,

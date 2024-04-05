@@ -1,0 +1,2 @@
+[2024-04-05 11:10:10,950][train][INFO][train.py>_log] ==> #0          Loss: 24.844   [Policy Loss: 2.550    Value Loss: 15.135   Reward Loss: 7.157    ] Replay Episodes Collected: 0          Buffer Size: 0          Lr: 0.050   
+[2024-04-05 11:10:14,624][train][INFO][train.py>_log] ==> #1          Loss: 24.637   [Policy Loss: 2.675    Value Loss: 15.124   Reward Loss: 6.835    ] Replay Episodes Collected: 0          Buffer Size: 0          Lr: 0.050   

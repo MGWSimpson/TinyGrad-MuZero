@@ -1,5 +1,6 @@
 from tinygrad import Tensor, nn
 from core.config import DiscreteSupport
+from tinygrad.nn.state import safe_save, safe_load, get_state_dict, load_state_dict
 
 import math
 
@@ -106,10 +107,9 @@ def soft_update(target, source, tau):
 def main():
     source  = LinearNet()
     target = LinearNet()
+    state_dict = get_state_dict(source)
 
-    tau=1e-2
-
-    soft_update(target, source, tau)
+    safe_save(state_dict, 'model.safetensors')
     pass
 
 

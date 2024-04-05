@@ -5,6 +5,9 @@ from config.classic_control.__init__ import ClassicControlConfig
 import argparse
 import os
 import ray
+import logging.config
+from core.utils import init_logger, make_results_dir
+
 
 from tinygrad import nn
 
@@ -23,7 +26,15 @@ def main():
     args = parser.parse_args()
 
     config = ClassicControlConfig(args=args)
- 
+
+
+    exp_path = './experiments/'
+
+    exp_path, log_base_path = make_results_dir(exp_path, args)
+
+    init_logger(log_base_path)
+
+
 
 
     try:

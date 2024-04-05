@@ -76,7 +76,7 @@ class BaseMuZeroConfig(object):
         self.device = 'gpu'
         self.exp_path = './'  # experiment path
         self.debug = False
-        self.model_path = './model.tg'
+        self.model_path = 'model.safetensors'
         self.seed = None
         self.value_support = value_support
         self.reward_support = reward_support
